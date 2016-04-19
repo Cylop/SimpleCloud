@@ -22,6 +22,9 @@ public class BungeecordInstance {
         this.port = port;
         this.channel = channel;
     }
+    public String getHostName() {
+        return host + ":" + port;
+    }
     public void alivePacket( BungeecordAlivePacket bungeecordAlivePacket ) {
         timeOutTime = System.currentTimeMillis() + 10000L;
         this.onlinePlayers = bungeecordAlivePacket.getOnlinePlayers();

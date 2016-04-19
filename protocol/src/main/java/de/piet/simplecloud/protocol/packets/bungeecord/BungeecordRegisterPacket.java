@@ -13,6 +13,11 @@ public class BungeecordRegisterPacket extends NettyPacket {
     private String host;
     @Getter
     private int port;
+    public BungeecordRegisterPacket() { }
+    public BungeecordRegisterPacket( String host, int port ) {
+        this.host = host;
+        this.port = port;
+    }
     @Override
     public void readPacket( ByteBuf byteBuf ) {
         this.host = StringPacketUtil.getStringFromBytes( new byte[ byteBuf.readInt() ] );
