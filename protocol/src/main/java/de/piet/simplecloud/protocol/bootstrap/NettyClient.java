@@ -14,6 +14,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +53,13 @@ public class NettyClient implements Runnable, NettyBootstrap {
                 } );
         ChannelFuture channelFuture = bootstrap.connect( host, port );
             this.channel = channelFuture.channel();
-            System.out.println( "Successfully connected to " + host + ":" + port );
+            channelFuture.channel().closeFuture().addListener( new GenericFutureListener< Future< ? super Void > >( ) {
+                @Override
+                public void operationComplete( Future< ? super Void > future ) throws Exception {
+                    System.out.println( "Netty connection lost or refused! Reconnect..." );
+                    run();
+                }
+            } );
             channelFuture.channel().closeFuture().sync();
         } catch ( InterruptedException e ) {
             e.printStackTrace( );

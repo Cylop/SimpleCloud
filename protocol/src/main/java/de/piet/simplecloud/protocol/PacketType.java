@@ -1,12 +1,14 @@
 package de.piet.simplecloud.protocol;
 
-import de.piet.simplecloud.protocol.packets.MessagePacket;
+import de.piet.simplecloud.protocol.packets.bungeecord.BungeecordAlivePacket;
+import de.piet.simplecloud.protocol.packets.bungeecord.BungeecordRegisterPacket;
 
 /**
  * Created by Peter on 11.04.2016.
  */
 public enum PacketType {
-    MESSAGE_PACKET( 1, MessagePacket.class );
+    BUNGEECORD_REGISTER( 1, BungeecordRegisterPacket.class ),
+    BUNGEECORD_ALIVE( 2, BungeecordAlivePacket.class );
     int packetID;
     Class<? extends NettyPacket> packetClass;
     PacketType( int packetID, Class<? extends NettyPacket> packetClass ) {

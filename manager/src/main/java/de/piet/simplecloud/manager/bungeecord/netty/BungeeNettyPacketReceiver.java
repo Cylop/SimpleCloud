@@ -3,6 +3,7 @@ package de.piet.simplecloud.manager.bungeecord.netty;
 import de.piet.simplecloud.manager.bungeecord.BungeecordManager;
 import de.piet.simplecloud.protocol.NettyPacket;
 import de.piet.simplecloud.protocol.packets.bungeecord.BungeecordAlivePacket;
+import de.piet.simplecloud.protocol.packets.bungeecord.BungeecordRegisterPacket;
 import de.piet.simplecloud.protocol.util.PacketReceiver;
 import io.netty.channel.Channel;
 
@@ -21,6 +22,9 @@ public class BungeeNettyPacketReceiver implements PacketReceiver {
                     System.out.println( "Received alive packet from unregistered bungeecord!" );
                 }
             }
+        } else if( nettyPacket instanceof BungeecordRegisterPacket ) {
+            BungeecordRegisterPacket bungeecordRegisterPacket = ( BungeecordRegisterPacket ) nettyPacket;
+            BungeecordManager.registerBungeecord( channel, bungeecordRegisterPacket );
         }
     }
     @Override
