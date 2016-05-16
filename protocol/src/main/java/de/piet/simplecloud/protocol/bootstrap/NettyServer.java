@@ -1,10 +1,8 @@
 package de.piet.simplecloud.protocol.bootstrap;
 
 import de.piet.simplecloud.protocol.NettyPacket;
-import de.piet.simplecloud.protocol.util.NettyBootstrap;
-import de.piet.simplecloud.protocol.util.PacketDecoder;
-import de.piet.simplecloud.protocol.util.PacketEncoder;
-import de.piet.simplecloud.protocol.util.PacketReceiver;
+import de.piet.simplecloud.protocol.util.NettyHandlerHelper;
+import de.piet.simplecloud.protocol.util.PipelineUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -14,6 +12,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,9 +20,9 @@ import java.util.List;
 /**
  * Created by Peter on 07.04.2016.
  */
-public class NettyServer implements Runnable, NettyBootstrap {
-    private static List<PacketReceiver> packetReceivers = Collections.synchronizedList( new ArrayList<>(  ) );
-    private NettyBootstrap instance;
+public class NettyServer implements Runnable, NettyHandlerHelper {
+    private static List<NettyHandlerHelper> packetReceivers = Collections.synchronizedList( new ArrayList<>(  ) );
+    private NettyHandlerHelper instance;
     private int port;
     public NettyServer( int port ) {
         this.instance = this;
@@ -39,9 +38,7 @@ public class NettyServer implements Runnable, NettyBootstrap {
                 .childHandler( new ChannelInitializer<SocketChannel>( ) {
                     @Override
                     protected void initChannel ( SocketChannel socketChannel ) throws Exception {
-                        socketChannel.pipeline().addLast( new PacketDecoder() );
-                        socketChannel.pipeline().addLast( new PacketEncoder() );
-                        socketChannel.pipeline().addLast( new NettyHandler( instance ) );
+                        PipelineUtil.preparePipeline( instance, socketChannel );
                     }
                 } )
                 .option( ChannelOption.SO_BACKLOG, 128 )
@@ -59,13 +56,13 @@ public class NettyServer implements Runnable, NettyBootstrap {
     @Override
     public void receivePacket ( NettyPacket nettyPacket, Channel channel ) {
         synchronized ( packetReceivers ) {
-            for( PacketReceiver packetReceiver : packetReceivers ) {
+            for( NettyHandlerHelper packetReceiver : packetReceivers ) {
                 packetReceiver.receivePacket( nettyPacket, channel );
             }
         }
     }
     @Override
-    public void addPacketReceiver ( PacketReceiver packetReceiver ) {
+    public void addPacketReceiver ( NettyHandlerHelper packetReceiver ) {
         synchronized ( packetReceivers ) {
             packetReceivers.add( packetReceiver );
         }
@@ -73,9 +70,14 @@ public class NettyServer implements Runnable, NettyBootstrap {
     @Override
     public void channelConnected ( Channel channel ) {
         synchronized ( packetReceivers ) {
-            for ( PacketReceiver packetReceiver : packetReceivers ) {
-                packetReceiver.channelActive( channel );
+            for ( NettyHandlerHelper packetReceiver : packetReceivers ) {
+                packetReceiver.channelConnected( channel );
             }
         }
+    }
+
+    @Override
+    public void channelTimeout( Channel channel ) {
+
     }
 }

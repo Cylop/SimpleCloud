@@ -20,13 +20,18 @@ public class BungeecordRegisterPacket extends NettyPacket {
     }
     @Override
     public void readPacket( ByteBuf byteBuf ) {
-        this.host = StringPacketUtil.getStringFromBytes( new byte[ byteBuf.readInt() ] );
+        byte[] hostBytes = new byte[ byteBuf.readInt() ];
+        byteBuf.readBytes( hostBytes );
+        this.host = StringPacketUtil.getStringFromBytes( hostBytes );
+
         this.port = byteBuf.readInt();
     }
     @Override
     public void writePacket( ByteBuf byteBuf ) {
-        byteBuf.writeInt( host.length() );
-        byteBuf.writeBytes( StringPacketUtil.getStringBytes( this.host ) );
+        byte[] hostBytes = StringPacketUtil.getStringBytes( this.host );
+        byteBuf.writeInt( hostBytes.length );
+        byteBuf.writeBytes( hostBytes );
+
         byteBuf.writeInt( this.port );
     }
 }
